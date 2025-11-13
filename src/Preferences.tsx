@@ -1,9 +1,9 @@
-// src/Preferences.tsx
+// src/Preferences.tsx (更新后)
 
 import React, { useState } from 'react';
 
 // =================================================================
-// 1. 子组件：PreferenceSection
+// 子组件：PreferenceSection (保持不变)
 // =================================================================
 interface PreferenceSectionProps {
     title: string;
@@ -24,6 +24,7 @@ const PreferenceSection: React.FC<PreferenceSectionProps> = ({ title, items, onA
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
+            event.preventDefault(); // 防止回车触发表单提交
             handleAdd();
         }
     };
@@ -31,22 +32,22 @@ const PreferenceSection: React.FC<PreferenceSectionProps> = ({ title, items, onA
     return (
         <div style={{ marginBottom: '20px' }}>
             <h4>{title}</h4>
-            <div style={{ minHeight: '30px' }}>
+            <div style={{ minHeight: '30px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                 {items.map(item => (
-                    <span key={item} style={{ display: 'inline-block', background: '#e9ecef', padding: '5px 10px', borderRadius: '15px', marginRight: '10px', marginBottom: '10px' }}>
+                    <span key={item} style={{ display: 'inline-flex', alignItems: 'center', background: '#e9ecef', padding: '5px 10px', borderRadius: '15px', marginBottom: '5px' }}>
                         {item}
-                        <button onClick={() => onRemoveItem(item)} style={{ marginLeft: '10px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'red', fontSize: '16px', padding: '0 5px' }}>×</button>
+                        <button onClick={() => onRemoveItem(item)} style={{ marginLeft: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'red', fontSize: '16px', padding: '0 5px', lineHeight: '1' }}>×</button>
                     </span>
                 ))}
             </div>
-            <div>
+            <div style={{ display: 'flex', gap: '10px' }}>
                 <input
                     type="text"
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="追加..."
-                    style={{ marginRight: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                    style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                 />
                 <button onClick={handleAdd} style={{ padding: '8px 15px' }}>追加</button>
             </div>
@@ -55,11 +56,14 @@ const PreferenceSection: React.FC<PreferenceSectionProps> = ({ title, items, onA
 };
 
 // =================================================================
-// 2. 主组件：Preferences
+// 主组件：Preferences
 // =================================================================
 type PreferenceType = 'likes' | 'dislikes' | 'allergies';
 
 interface PreferencesProps {
+    // ▼▼▼ 新增 isOpen prop ▼▼▼
+    isOpen: boolean; 
+    // ▲▲▲ 新增 isOpen prop ▲▲▲
     likes: string[];
     dislikes: string[];
     allergies: string[];
@@ -67,13 +71,18 @@ interface PreferencesProps {
     onClose: () => void;
 }
 
-const Preferences: React.FC<PreferencesProps> = ({ likes, dislikes, allergies, onUpdatePreferences, onClose }) => {
+const Preferences: React.FC<PreferencesProps> = ({ isOpen, likes, dislikes, allergies, onUpdatePreferences, onClose }) => {
+    
+    // ▼▼▼ 核心修改：如果 isOpen 为 false，则不渲染任何东西 ▼▼▼
+    if (!isOpen) {
+        return null;
+    }
+    // ▲▲▲ 核心修改 ▲▲▲
 
     const handleContentClick = (e: React.MouseEvent) => {
         e.stopPropagation();
     };
 
-    // 中文备注：定义配置数组，实现数据驱动渲染。
     const preferenceSections: { key: PreferenceType; title: string; items: string[] }[] = [
         { key: 'likes', title: '好きな食材・味 (例: 牛肉, スパイシー)', items: likes },
         { key: 'dislikes', title: '苦手なもの (例: パクチー, ゴーヤ)', items: dislikes },
